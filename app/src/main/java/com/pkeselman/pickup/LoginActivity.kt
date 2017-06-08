@@ -14,6 +14,7 @@ import android.database.Cursor
 import android.net.Uri
 import android.os.AsyncTask
 
+
 import android.os.Build
 import android.os.Bundle
 import android.provider.ContactsContract
@@ -22,15 +23,21 @@ import android.view.KeyEvent
 import android.view.View
 import android.view.View.OnClickListener
 import android.view.inputmethod.EditorInfo
-import android.widget.ArrayAdapter
-import android.widget.AutoCompleteTextView
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
 
 import java.util.ArrayList
 
+import com.google.android.gms.tasks.Task
+import com.google.firebase.auth.FirebaseAuth
+
 import android.Manifest.permission.READ_CONTACTS
+import android.support.annotation.NonNull
+import android.support.annotation.Nullable
+import android.util.Log
+import android.widget.*
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.auth.AuthResult
+import com.google.firebase.auth.FirebaseUser
+import org.jetbrains.annotations.NotNull
 
 /**
  * A login screen that offers login via email/password.
@@ -47,10 +54,16 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
     private var mProgressView: View? = null
     private var mLoginFormView: View? = null
 
+    private var mAuth: FirebaseAuth? = null
+
+    private val TAG = "EmailPassword"
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
         // Set up the login form.
+
         mEmailView = findViewById(R.id.email) as AutoCompleteTextView
         populateAutoComplete()
 
@@ -68,6 +81,17 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
 
         mLoginFormView = findViewById(R.id.login_form)
         mProgressView = findViewById(R.id.login_progress)
+
+        mAuth = FirebaseAuth.getInstance()
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        val currentUser: FirebaseUser? = mAuth!!.currentUser
+
+        //TODO: If the currentUser is logged in then switch to the home page
+
     }
 
     private fun populateAutoComplete() {
@@ -153,11 +177,12 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
         } else {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
-            showProgress(true)
-            mAuthTask = UserLoginTask(email, password)
-            mAuthTask!!.execute(null as Void?)
+
+            signIn(email, password)
         }
     }
+
+
 
     private fun isEmailValid(email: String): Boolean {
         //TODO: Replace this with your own logic
@@ -167,6 +192,24 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
     private fun isPasswordValid(password: String): Boolean {
         //TODO: Replace this with your own logic
         return password.length > 4
+    }
+
+    private fun signIn(email: String, password: String){
+        mAuth!!.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, object : OnCompleteListener<AuthResult> {
+                    override fun onComplete(@NonNull task: Task<AuthResult>) {
+                        if(task.isSuccessful){
+                            Log.d(TAG, "signInWithEmail:Success")
+                            var user: FirebaseUser? = mAuth!!.currentUser
+                            //TODO: Update the UI to homescreen if successful
+                        }else{
+                            Log.w(TAG, "signInWithEmail:failure", task.exception)
+                            Toast.makeText(this@LoginActivity, "Authentication failed.",
+                                Toast.LENGTH_SHORT).show()
+                            //TODO: Update UI without passing user
+                        }
+                    }
+                })
     }
 
     /**
