@@ -60,10 +60,10 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
         setContentView(R.layout.activity_login)
         // Set up the login form.
 
-        mEmailView = findViewById(R.id.email) as AutoCompleteTextView
+        mEmailView = findViewById(R.id.sign_in_email) as AutoCompleteTextView
         populateAutoComplete()
 
-        mPasswordView = findViewById(R.id.password) as EditText
+        mPasswordView = findViewById(R.id.sign_in_password) as EditText
         mPasswordView!!.setOnEditorActionListener(TextView.OnEditorActionListener { textView, id, keyEvent ->
             if (id == R.id.login || id == EditorInfo.IME_NULL) {
                 attemptLogin()
@@ -168,9 +168,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
             // form field with an error.
             focusView!!.requestFocus()
         } else {
-            // Show a progress spinner, and kick off a background task to
-            // perform the user login attempt.
-
+            // Show a progress spinner, and call function to sign in with Firebase
             showProgress(true)
             signIn(email, password)
         }
